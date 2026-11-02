@@ -91,12 +91,29 @@
   .round svg{width:28px;height:28px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .round.on{background:var(--sun);box-shadow:0 0 0 4px rgba(255,198,26,.45),0 0 24px rgba(255,198,26,.95)}
   .round.on svg{fill:var(--ink)}
+  /* plastic shutter button */
   .shutter{
-    width:92px;height:92px;border-radius:16px;border:4px solid #fff;background:var(--red);color:#fff;
-    font-weight:900;letter-spacing:.1em;font-size:16px;
-    box-shadow:0 8px 0 #a31a22,0 14px 24px rgba(229,48,58,.4);transition:transform .08s,box-shadow .08s;margin-bottom:8px
+    position:relative;flex:none;width:98px;height:98px;padding:0;border:0;margin:0 0 7px;border-radius:26px;
+    -webkit-appearance:none;appearance:none;background:linear-gradient(145deg,#46464a,#0f0f10);
+    box-shadow:0 7px 0 #050505,0 12px 20px rgba(0,0,0,.35),inset 0 2px 1px rgba(255,255,255,.28),inset 0 -2px 3px rgba(0,0,0,.6);
+    -webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;outline:none
   }
-  .shutter:active{transform:translateY(6px);box-shadow:0 2px 0 #a31a22,0 6px 12px rgba(229,48,58,.4)}
+  .shutter .dome{
+    position:absolute;inset:9px;border-radius:19px;display:grid;place-items:center;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E"),radial-gradient(circle at 32% 24%,#66666b 0%,#2b2b2e 48%,#101011 100%);
+    box-shadow:inset 0 2px 2px rgba(255,255,255,.3),inset 0 -5px 8px rgba(0,0,0,.7),0 2px 3px rgba(0,0,0,.7);
+    transition:transform .07s ease-out,box-shadow .07s ease-out;will-change:transform
+  }
+  .shutter .dome::before{
+    content:"";position:absolute;inset:7px;border-radius:13px;border:2px solid rgba(255,255,255,.09);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.07);pointer-events:none
+  }
+  .shutter .lbl{
+    position:relative;font-size:14px;font-weight:900;letter-spacing:.14em;text-indent:.14em;color:#8e8e95;
+    text-shadow:0 -1px 0 #000,0 1px 0 rgba(255,255,255,.22);pointer-events:none
+  }
+  .shutter.down .dome{transform:translateY(5px) scale(.97);box-shadow:inset 0 1px 2px rgba(255,255,255,.2),inset 0 -2px 5px rgba(0,0,0,.8),0 0 1px rgba(0,0,0,.8)}
+  .shutter:focus-visible{box-shadow:0 7px 0 #050505,0 0 0 4px #fff,0 0 0 7px var(--red)}
 
   .actions{width:min(92vw,460px);display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   .pill{
@@ -224,7 +241,7 @@
         </div>
       </div>
     </div>
-    <div class="sidechip" id="sideChip">Front · rear camera</div>
+    <div class="sidechip" id="sideChip">Front · selfie camera</div>
 
     <div class="viewfinder" id="vf">
       <video id="video" playsinline muted autoplay></video>
@@ -240,7 +257,7 @@
       <button class="round" id="btnFlip" type="button" aria-label="Flip view" data-i18n-aria="flipAria">
         <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>
       </button>
-      <button class="shutter" id="btnPhoto" type="button">PHOTO</button>
+      <button class="shutter" id="btnPhoto" type="button"><span class="dome"><span class="lbl" data-i18n="photoBtn">PHOTO</span></span></button>
       <button class="round" id="btnFlash" type="button" aria-label="Flash" aria-pressed="false" data-i18n-aria="flashAria">
         <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
       </button>
@@ -274,7 +291,7 @@
     <span data-i18n="easyBtn">Visit EasyLandX</span>
     <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
   </a>
-  <div class="copy">© 2026 DispoPro · EasyLandX</div>
+  <div class="copy">© DispoPro · EasyLandX</div>
   <span class="tip" data-i18n="tip">Tip: in Safari tap Share → Add to Home Screen for true full screen.</span>
 </footer>
 
@@ -308,20 +325,20 @@
 
   /* ---------- Languages ---------- */
   var I18N = {
-    en:{tag:'Single-use camera',stageAria:'Camera. Tap to flip.',flipAria:'Flip view',flashAria:'Flash',enableCam:'Enable camera',
+    en:{tag:'Single-use camera',photoBtn:'PHOTO',stageAria:'Camera. Tap to flip.',flipAria:'Flip view',flashAria:'Flash',enableCam:'Enable camera',
       upload:'Upload',print:'Print',hint:'Tap the camera to flip it · scroll down for your roll',roll:'Your roll',
       empty:'No photos yet.<br>Take one or upload from your library.',rollHint:'Frame {a} of {b} \u00B7 tap a negative to pick it for Print or WhatsApp',save:'Save',paper:'Paper',close:'Close',easyBtn:'Visit EasyLandX',
-      tip:'Tip: in Safari tap Share → Add to Home Screen for true full screen.',chipFront:'Front · rear camera',chipBack:'Back · selfie camera',
+      tip:'Tip: in Safari tap Share → Add to Home Screen for true full screen.',chipFront:'Front · selfie camera',chipBack:'Back · rear camera',
       vfAsk:'Allow camera access to see through the viewfinder.',vfNone:'Camera is not available here. You can still upload a photo.',
       vfBlocked:'Camera blocked or unavailable. Allow access, or upload a photo instead.',flashOn:'Flash on',flashOff:'Flash off',
       camNotReady:'Camera not ready. Enable it or upload a photo.',photoTaken:'Photo taken · {n} on your roll',photoAdded:'Photo added to your roll',
       readErr:'Could not read that image.',needPhoto:'Take or upload a photo first.',saved:'Saved',
       waDesktop:'Photo saved to Downloads. Attach it in WhatsApp.',developing:'Developing…',fresh:'Fresh from the lab ✨',
       waText:'Taken with DispoPro',langAria:'Change language'},
-    es:{tag:'Cámara desechable',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
+    es:{tag:'Cámara desechable',photoBtn:'FOTO',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
       upload:'Subir',print:'Imprimir',hint:'Toca la cámara para girarla · desliza para ver tu carrete',roll:'Tu carrete',
       empty:'Aún no hay fotos.<br>Haz una o sube una de tu galería.',rollHint:'Fotograma {a} de {b} \u00B7 toca un negativo para elegirlo para Imprimir o WhatsApp',save:'Guardar',paper:'Papel',close:'Cerrar',easyBtn:'Visita EasyLandX',
-      tip:'Consejo: en Safari toca Compartir → Añadir a pantalla de inicio para pantalla completa real.',chipFront:'Frontal · cámara trasera',chipBack:'Trasera · cámara selfie',
+      tip:'Consejo: en Safari toca Compartir → Añadir a pantalla de inicio para pantalla completa real.',chipFront:'Frontal · cámara selfie',chipBack:'Trasera · cámara trasera',
       vfAsk:'Permite el acceso a la cámara para ver por el visor.',vfNone:'La cámara no está disponible aquí. Aún puedes subir una foto.',
       vfBlocked:'Cámara bloqueada o no disponible. Permite el acceso o sube una foto.',flashOn:'Flash activado',flashOff:'Flash desactivado',
       camNotReady:'Cámara no lista. Actívala o sube una foto.',photoTaken:'Foto hecha · {n} en tu carrete',photoAdded:'Foto añadida a tu carrete',
@@ -388,7 +405,7 @@
   $('#imgFlash').src = CAM_IMG.flash;
 
   /* ---------- State ---------- */
-  var side = 'front';          // front = lens side (rear phone camera), back = viewfinder side (selfie camera)
+  var side = 'front';          // front = selfie camera, back = rear camera
   var flashOn = false;
   var stream = null, camToken = 0;
   var photos = [], cur = -1;
@@ -415,13 +432,13 @@
       setVf('vfNone');
       $('#enableCam').style.display = 'none'; vfMsg.hidden = false; return;
     }
-    var facing = side === 'front' ? 'environment' : 'user';
+    var facing = side === 'front' ? 'user' : 'environment';
     navigator.mediaDevices.getUserMedia({
       video:{facingMode:{ideal:facing}, width:{ideal:1280}, height:{ideal:1280}}, audio:false
     }).then(function(s){
       if(token !== camToken){ s.getTracks().forEach(function(t){t.stop();}); return; }
       stream = s; video.srcObject = s;
-      video.classList.toggle('mirror', side === 'back');
+      video.classList.toggle('mirror', side === 'front');
       vfMsg.hidden = true;
       var p = video.play(); if(p && p.catch) p.catch(function(){});
     }).catch(function(){
@@ -476,7 +493,7 @@
     var c = document.createElement('canvas');
     c.width = Math.round(sw*k); c.height = Math.round(sh*k);
     var x = c.getContext('2d');
-    if(side === 'back'){ x.translate(c.width, 0); x.scale(-1, 1); }
+    if(side === 'front'){ x.translate(c.width, 0); x.scale(-1, 1); }
     x.drawImage(video, sx, sy, sw, sh, 0, 0, c.width, c.height);
 
     clickSound();
@@ -489,6 +506,14 @@
     toast(t('photoTaken').replace('{n}', photos.length));
   }
   $('#btnPhoto').addEventListener('click', snap);
+  (function(){
+    var b = $('#btnPhoto');
+    function down(){ b.classList.add('down'); }
+    function up(){ b.classList.remove('down'); }
+    b.addEventListener('pointerdown', down);
+    ['pointerup','pointercancel','pointerleave','blur'].forEach(function(ev){ b.addEventListener(ev, up); });
+    b.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  })();
 
   /* ---------- Upload ---------- */
   $('#btnUpload').addEventListener('click', function(){ $('#fileInput').click(); });
