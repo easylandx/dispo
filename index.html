@@ -143,6 +143,26 @@
   .strip img{width:70px;height:70px;object-fit:cover;border-radius:10px;border:3px solid #fff;flex:none;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.15)}
   .strip img.sel{border-color:var(--red)}
 
+  /* film negatives */
+  .filmscroll{width:calc(100% + 32px);margin:0 -16px;padding:6px 16px 20px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .filmwrap{display:inline-block;min-width:100%;filter:drop-shadow(0 8px 10px rgba(90,35,0,.3))}
+  .film{
+    display:inline-flex;align-items:flex-start;min-width:100%;height:198px;padding:26px 0;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='26'%3E%3Crect x='6' y='9' width='12' height='8' rx='2.2' fill='%23fff3d6'/%3E%3C/svg%3E") top left/24px 26px repeat-x,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='26'%3E%3Crect x='6' y='9' width='12' height='8' rx='2.2' fill='%23fff3d6'/%3E%3C/svg%3E") bottom left/24px 26px repeat-x,linear-gradient(180deg,#cd6c2c,#b25b20 50%,#cd6c2c);
+    clip-path:polygon(0 30%,44px 0,calc(100% - 14px) 0,100% 12%,100% 88%,calc(100% - 14px) 100%,44px 100%,0 70%)
+  }
+  .film .lead{flex:none;width:56px}
+  .film .tail{flex:none;width:40px}
+  .cell{flex:none;width:168px;margin:0 4px;padding:0;border:0;background:none;text-align:left;cursor:pointer;position:relative}
+  .win{position:relative;display:block;width:168px;height:122px;background:#e3924a;border-radius:3px;overflow:hidden;isolation:isolate;box-shadow:inset 0 0 0 1px rgba(60,20,0,.3)}
+  .win img{width:100%;height:100%;object-fit:cover;display:block;filter:invert(1) sepia(.3) saturate(1.3) contrast(.85) brightness(.9)}
+  .win::after{content:"";position:absolute;inset:0;background:#e0852a;mix-blend-mode:multiply;opacity:.5}
+  .cell.blank .win{background:rgba(255,214,150,.3)}
+  .cell.blank{cursor:default}
+  .cell.sel .win{outline:3px solid #fff;outline-offset:2px}
+  .meta{display:flex;justify-content:space-between;font:700 11px/1 "Courier New",monospace;color:#ffd58a;letter-spacing:.05em;padding:6px 2px 0}
+  .rollhint{margin:0;font-size:13px;font-weight:600;opacity:.75;text-align:center;max-width:min(92vw,460px)}
+
   footer{background:#ffd24a;text-align:center;padding:22px 16px calc(env(safe-area-inset-bottom) + 24px);font-size:13px;font-weight:600}
   footer a{color:inherit}
 
@@ -243,9 +263,9 @@
 
   <section class="s2" id="roll">
     <h2 data-i18n="roll">Your roll</h2>
+    <div class="filmscroll" id="filmScroll"><div class="filmwrap"><div class="film" id="film"></div></div></div>
+    <p class="rollhint" id="rollHint" hidden></p>
     <div class="empty" id="empty" data-i18n-html="empty">No photos yet.<br>Take one or upload from your library.</div>
-    <div class="bigphoto" id="big" hidden><img id="bigImg" alt="Selected photo"><span>DispoPro</span></div>
-    <div class="strip" id="strip"></div>
   </section>
 </main>
 
@@ -290,7 +310,7 @@
   var I18N = {
     en:{tag:'Single-use camera',stageAria:'Camera. Tap to flip.',flipAria:'Flip view',flashAria:'Flash',enableCam:'Enable camera',
       upload:'Upload',print:'Print',hint:'Tap the camera to flip it · scroll down for your roll',roll:'Your roll',
-      empty:'No photos yet.<br>Take one or upload from your library.',save:'Save',paper:'Paper',close:'Close',easyBtn:'Visit EasyLandX',
+      empty:'No photos yet.<br>Take one or upload from your library.',rollHint:'Frame {a} of {b} \u00B7 tap a negative to pick it for Print or WhatsApp',save:'Save',paper:'Paper',close:'Close',easyBtn:'Visit EasyLandX',
       tip:'Tip: in Safari tap Share → Add to Home Screen for true full screen.',chipFront:'Front · rear camera',chipBack:'Back · selfie camera',
       vfAsk:'Allow camera access to see through the viewfinder.',vfNone:'Camera is not available here. You can still upload a photo.',
       vfBlocked:'Camera blocked or unavailable. Allow access, or upload a photo instead.',flashOn:'Flash on',flashOff:'Flash off',
@@ -300,7 +320,7 @@
       waText:'Taken with DispoPro',langAria:'Change language'},
     es:{tag:'Cámara desechable',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
       upload:'Subir',print:'Imprimir',hint:'Toca la cámara para girarla · desliza para ver tu carrete',roll:'Tu carrete',
-      empty:'Aún no hay fotos.<br>Haz una o sube una de tu galería.',save:'Guardar',paper:'Papel',close:'Cerrar',easyBtn:'Visita EasyLandX',
+      empty:'Aún no hay fotos.<br>Haz una o sube una de tu galería.',rollHint:'Fotograma {a} de {b} \u00B7 toca un negativo para elegirlo para Imprimir o WhatsApp',save:'Guardar',paper:'Papel',close:'Cerrar',easyBtn:'Visita EasyLandX',
       tip:'Consejo: en Safari toca Compartir → Añadir a pantalla de inicio para pantalla completa real.',chipFront:'Frontal · cámara trasera',chipBack:'Trasera · cámara selfie',
       vfAsk:'Permite el acceso a la cámara para ver por el visor.',vfNone:'La cámara no está disponible aquí. Aún puedes subir una foto.',
       vfBlocked:'Cámara bloqueada o no disponible. Permite el acceso o sube una foto.',flashOn:'Flash activado',flashOff:'Flash desactivado',
@@ -499,22 +519,46 @@
       }, 30);
     });
     photos.unshift(p); if(photos.length > 24) photos.pop();
-    cur = 0; renderRoll();
+    cur = 0; renderRoll(true);
   }
-  function renderRoll(){
-    var strip = $('#strip'); strip.innerHTML = '';
+  function updateHint(){
+    var h = $('#rollHint');
+    if(!photos.length){ h.hidden = true; return; }
+    h.hidden = false;
+    h.textContent = t('rollHint').replace('{a}', photos.length - cur).replace('{b}', photos.length);
+  }
+  function renderRoll(center){
+    var film = $('#film'), sc = $('#filmScroll'), prev = sc.scrollLeft;
+    film.innerHTML = '';
     var has = photos.length > 0;
-    $('#empty').hidden = has; $('#big').hidden = !has;
+    $('#empty').hidden = has;
     var chip = $('#lastChip');
-    if(!has){ chip.classList.remove('show'); return; }
-    photos.forEach(function(p, i){
-      var im = new Image(); im.src = p.thumb; im.alt = 'Photo ' + (photos.length - i);
-      if(i === cur) im.className = 'sel';
-      im.addEventListener('click', function(){ cur = i; renderRoll(); });
-      strip.appendChild(im);
-    });
-    $('#bigImg').src = photos[cur].thumb;
-    chip.src = photos[cur].thumb; chip.classList.remove('show'); void chip.offsetWidth; chip.classList.add('show');
+    var lead = document.createElement('div'); lead.className = 'lead'; film.appendChild(lead);
+    var selEl = null;
+    function cell(num, p, i){
+      var b = document.createElement('button'); b.type = 'button';
+      b.className = 'cell' + (p ? '' : ' blank') + (p && i === cur ? ' sel' : '');
+      var win = document.createElement('span'); win.className = 'win';
+      if(p){ var im = new Image(); im.src = p.thumb; im.alt = ''; win.appendChild(im); }
+      var meta = document.createElement('span'); meta.className = 'meta';
+      meta.innerHTML = '<span>\u25B8' + num + '</span><span>' + num + 'A</span>';
+      b.appendChild(win); b.appendChild(meta);
+      if(p){
+        b.addEventListener('click', function(){ cur = i; renderRoll(); });
+        if(i === cur) selEl = b;
+      }
+      film.appendChild(b);
+    }
+    for(var i = photos.length - 1; i >= 0; i--) cell(photos.length - i, photos[i], i);
+    for(var k = photos.length; k < 5; k++) cell(k + 1, null, -1);
+    var tail = document.createElement('div'); tail.className = 'tail'; film.appendChild(tail);
+    updateHint();
+    if(!has){ chip.classList.remove('show'); sc.scrollLeft = 0; return; }
+    if(center && selEl){ sc.scrollLeft = selEl.offsetLeft - sc.clientWidth/2 + selEl.offsetWidth/2; }
+    else { sc.scrollLeft = prev; }
+    chip.src = photos[cur].thumb;
+    if(center){ chip.classList.remove('show'); void chip.offsetWidth; chip.classList.add('show'); }
+    else if(!chip.classList.contains('show')) chip.classList.add('show');
   }
   $('#lastChip').addEventListener('click', function(){ document.getElementById('roll').scrollIntoView({behavior:'smooth'}); });
 
@@ -574,14 +618,11 @@
     x.shadowBlur = 0;
 
     // paper border
-    var pad = Math.round(W*.055), bottom = Math.round(W*.17);
+    var pad = Math.round(W*.055), bottom = Math.round(W*.12);
     var out = document.createElement('canvas'); out.width = W + pad*2; out.height = H + pad + bottom;
     var o = out.getContext('2d');
     o.fillStyle = '#fbf7ee'; o.fillRect(0, 0, out.width, out.height);
     o.shadowColor = 'rgba(0,0,0,.25)'; o.shadowBlur = 6; o.drawImage(c, pad, pad); o.shadowBlur = 0;
-    o.fillStyle = '#3a3a3a'; o.textAlign = 'center';
-    o.font = 'italic ' + Math.round(W*.065) + 'px "Bradley Hand","Segoe Script","Brush Script MT",cursive';
-    o.fillText('DispoPro', out.width/2, H + pad + bottom*.62);
     return out;
   }
 
@@ -654,6 +695,7 @@
     $('#langCode').textContent = lang.toUpperCase();
     $('#btnLang').setAttribute('aria-label', t('langAria'));
     updateChip();
+    updateHint();
     vfText.textContent = t(vfKey);
     if(!modal.hidden || printDone) $('#printCap').textContent = t(printDone ? 'fresh' : 'developing');
   }
