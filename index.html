@@ -50,8 +50,8 @@
   .face img{position:absolute;inset:10px;width:calc(100% - 20px);height:calc(100% - 20px);object-fit:contain;pointer-events:none;-webkit-user-drag:none}
   .face .flashimg{opacity:0;transition:opacity .2s}
   .stage.flash-on .flashimg{opacity:1}
-  .stage.pop .flipper{animation:pop .25s ease}
-  @keyframes pop{50%{transform:scale(1.03) rotateY(var(--r,0deg))}}
+  .stage.pop{animation:pop .25s ease}
+  @keyframes pop{50%{transform:scale(1.03)}}
 
   .sidechip{
     font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
@@ -185,6 +185,7 @@
 
   /* ---------- Effects ---------- */
   .flashfx{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
+  .flashfx.hold{opacity:1;animation:none;background:#fffdf0}
   .flashfx.fire{animation:fx .45s ease-out}
   @keyframes fx{0%{opacity:.95}100%{opacity:0}}
   .toast{
@@ -325,7 +326,7 @@
 
   /* ---------- Languages ---------- */
   var I18N = {
-    en:{tag:'Single-use camera',photoBtn:'PHOTO',stageAria:'Camera. Tap to flip.',flipAria:'Flip view',flashAria:'Flash',enableCam:'Enable camera',
+    en:{tag:'Single-use camera',photoBtn:'PHOTO',noTorch:"This browser can't fire the phone's real flash (iPhone Safari doesn't allow it), so the screen lights up instead.",stageAria:'Camera. Tap to flip.',flipAria:'Flip view',flashAria:'Flash',enableCam:'Enable camera',
       upload:'Upload',print:'Print',hint:'Tap the camera to flip it · scroll down for your roll',roll:'Your roll',
       empty:'No photos yet.<br>Take one or upload from your library.',rollHint:'Frame {a} of {b} \u00B7 tap a negative to pick it for Print or WhatsApp',save:'Save',paper:'Paper',close:'Close',easyBtn:'Visit EasyLandX',
       tip:'Tip: in Safari tap Share → Add to Home Screen for true full screen.',chipFront:'Front · selfie camera',chipBack:'Back · rear camera',
@@ -335,7 +336,7 @@
       readErr:'Could not read that image.',needPhoto:'Take or upload a photo first.',saved:'Saved',
       waDesktop:'Photo saved to Downloads. Attach it in WhatsApp.',developing:'Developing…',fresh:'Fresh from the lab ✨',
       waText:'Taken with DispoPro',langAria:'Change language'},
-    es:{tag:'Cámara desechable',photoBtn:'FOTO',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
+    es:{tag:'Cámara desechable',photoBtn:'FOTO',noTorch:'Este navegador no puede activar el flash real del móvil (Safari en iPhone no lo permite), así que se ilumina la pantalla.',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
       upload:'Subir',print:'Imprimir',hint:'Toca la cámara para girarla · desliza para ver tu carrete',roll:'Tu carrete',
       empty:'Aún no hay fotos.<br>Haz una o sube una de tu galería.',rollHint:'Fotograma {a} de {b} \u00B7 toca un negativo para elegirlo para Imprimir o WhatsApp',save:'Guardar',paper:'Papel',close:'Cerrar',easyBtn:'Visita EasyLandX',
       tip:'Consejo: en Safari toca Compartir → Añadir a pantalla de inicio para pantalla completa real.',chipFront:'Frontal · cámara selfie',chipBack:'Trasera · cámara trasera',
@@ -483,8 +484,7 @@
   }
 
   /* ---------- Capture ---------- */
-  function snap(){
-    if(!video.videoWidth || !stream){ toast(t('camNotReady')); return; }
+  function doCapture(viaTorch){
     var r = vf.getBoundingClientRect(), target = r.width / r.height;
     var vw = video.videoWidth, vh = video.videoHeight, sx, sy, sw, sh;
     if(vw / vh > target){ sh = vh; sw = vh * target; sx = (vw - sw)/2; sy = 0; }
@@ -497,13 +497,42 @@
     x.drawImage(video, sx, sy, sw, sh, 0, 0, c.width, c.height);
 
     clickSound();
-    if(flashOn){
-      var fx = $('#flashFx'); fx.classList.remove('fire'); void fx.offsetWidth; fx.classList.add('fire');
+    if(flashOn && !viaTorch){
+      var fx = $('#flashFx'); fx.classList.remove('hold'); fx.classList.remove('fire'); void fx.offsetWidth; fx.classList.add('fire');
     }
     stage.classList.remove('pop'); void stage.offsetWidth; stage.classList.add('pop');
     if(navigator.vibrate) navigator.vibrate(25);
     addPhoto(c, flashOn);
     toast(t('photoTaken').replace('{n}', photos.length));
+  }
+  var shooting = false, torchWarned = false;
+  function snap(){
+    if(!video.videoWidth || !stream){ toast(t('camNotReady')); return; }
+    if(shooting) return;
+    if(!flashOn){ doCapture(false); return; }
+    shooting = true;
+    var track = stream.getVideoTracks()[0], caps = {};
+    try{ caps = (track && track.getCapabilities) ? track.getCapabilities() : {}; }catch(e){}
+
+    function screenFlash(){
+      // light the scene with the screen (works for the selfie camera; fallback when there is no torch)
+      var fx = $('#flashFx'); fx.classList.remove('fire'); fx.classList.add('hold');
+      setTimeout(function(){ doCapture(false); shooting = false; }, 300);
+    }
+
+    if(side === 'back' && caps.torch){
+      // real LED flash: switch the torch on, let exposure settle, shoot, switch it off
+      track.applyConstraints({advanced:[{torch:true}]}).then(function(){
+        setTimeout(function(){
+          doCapture(true);
+          track.applyConstraints({advanced:[{torch:false}]}).catch(function(){});
+          shooting = false;
+        }, 380);
+      }).catch(function(){ screenFlash(); });
+      return;
+    }
+    if(side === 'back' && !torchWarned){ torchWarned = true; toast(t('noTorch')); }
+    screenFlash();
   }
   $('#btnPhoto').addEventListener('click', snap);
   (function(){
