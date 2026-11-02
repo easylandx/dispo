@@ -9,6 +9,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="DispoPro">
 <meta name="theme-color" content="#ffd43b">
+<link rel="manifest" href="dispo.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="description" content="DispoPro — a single-use camera in your pocket. Flip it, shoot it, print it, send it.">
 <style>
   :root{
@@ -246,6 +249,22 @@
     body.printing *{visibility:hidden}
     body.printing #printImg{visibility:visible;position:absolute;left:0;top:0;width:100%;max-height:none;box-shadow:none;animation:none;filter:none;opacity:1}
   }
+
+  /* ---------- PWA: install button + iOS helper ---------- */
+  .toprow{justify-content:space-between;align-items:center;gap:8px}
+  .toprow .lang{margin-left:auto}
+  .installbtn{
+    display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px 0 11px;border:0;border-radius:999px;background:#fff;
+    font-weight:800;font-size:13px;letter-spacing:.04em;box-shadow:0 4px 10px rgba(31,43,51,.14)
+  }
+  .installbtn[hidden]{display:none}
+  .installbtn:active{transform:scale(.95)}
+  .installbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .ioshelp{
+    margin:0;width:min(92vw,460px);text-align:center;font-size:12px;font-weight:700;line-height:1.35;
+    background:rgba(255,255,255,.75);border-radius:14px;padding:8px 14px
+  }
+  .ioshelp[hidden]{display:none}
   @media (prefers-reduced-motion:reduce){.flipper{transition:none}}
 </style>
 </head>
@@ -254,6 +273,9 @@
 <main>
   <section class="s1">
     <div class="toprow">
+      <button class="installbtn" id="btnInstall" type="button" hidden>
+        <svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg><span data-i18n="install">Install app</span>
+      </button>
       <button class="lang" id="btnLang" type="button"><span id="flag"></span><b id="langCode">EN</b></button>
     </div>
     <header>
@@ -312,6 +334,7 @@
       </button>
     </div>
     <input type="file" id="fileInput" accept="image/*" hidden>
+    <p class="ioshelp" id="iosHelp" data-i18n="iosHelp" hidden>To install: tap Share, then Add to Home Screen.</p>
     <p class="hint" data-i18n="hint">Tap the camera to flip it · scroll down for your roll</p>
   </section>
 
@@ -362,7 +385,7 @@
 
   /* ---------- Languages ---------- */
   var I18N = {
-    en:{tag:'Single-use camera',photoBtn:'PHOTO',packAria:'Tap to open the packaging',tapOpen:'Tap to open',vfPack:'Open the packaging to start shooting.',ready:'Camera unwrapped · ready to shoot!',noTorch:"This browser can't fire the phone's real flash (iPhone Safari doesn't allow it), so the screen lights up instead.",stageAria:'Camera. Tap to flip.',flipAria:'Flip view',flashAria:'Flash',enableCam:'Enable camera',
+    en:{install:'Install app',iosHelp:'To install on iPhone or iPad: tap Share \u2192 Add to Home Screen.',tag:'Single-use camera',photoBtn:'PHOTO',packAria:'Tap to open the packaging',tapOpen:'Tap to open',vfPack:'Open the packaging to start shooting.',ready:'Camera unwrapped · ready to shoot!',noTorch:"This browser can't fire the phone's real flash (iPhone Safari doesn't allow it), so the screen lights up instead.",stageAria:'Camera. Tap to flip.',flipAria:'Flip view',flashAria:'Flash',enableCam:'Enable camera',
       upload:'Upload',print:'Print',hint:'Tap the camera to flip it · scroll down for your roll',roll:'Your roll',
       empty:'No photos yet.<br>Take one or upload from your library.',rollHint:'Frame {a} of {b} \u00B7 tap a negative to pick it for Print or WhatsApp',save:'Save',paper:'Paper',close:'Close',easyBtn:'Visit EasyLandX',
       tip:'Tip: in Safari tap Share → Add to Home Screen for true full screen.',chipFront:'Front · selfie camera',chipBack:'Back · rear camera',
@@ -372,7 +395,7 @@
       readErr:'Could not read that image.',needPhoto:'Take or upload a photo first.',saved:'Saved',
       waDesktop:'Photo saved to Downloads. Attach it in WhatsApp.',waCopied:'Photo copied. Paste it in WhatsApp with Ctrl+V.',developing:'Developing…',fresh:'Fresh from the lab ✨',
       waText:'Taken with DispoPro',langAria:'Change language'},
-    es:{tag:'Cámara desechable',photoBtn:'FOTO',packAria:'Toca para abrir el envoltorio',tapOpen:'Toca para abrir',vfPack:'Abre el envoltorio para empezar a disparar.',ready:'Cámara desembalada · ¡lista para disparar!',noTorch:'Este navegador no puede activar el flash real del móvil (Safari en iPhone no lo permite), así que se ilumina la pantalla.',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
+    es:{install:'Instalar app',iosHelp:'Para instalar en iPhone o iPad: toca Compartir \u2192 A\u00f1adir a pantalla de inicio.',tag:'Cámara desechable',photoBtn:'FOTO',packAria:'Toca para abrir el envoltorio',tapOpen:'Toca para abrir',vfPack:'Abre el envoltorio para empezar a disparar.',ready:'Cámara desembalada · ¡lista para disparar!',noTorch:'Este navegador no puede activar el flash real del móvil (Safari en iPhone no lo permite), así que se ilumina la pantalla.',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
       upload:'Subir',print:'Imprimir',hint:'Toca la cámara para girarla · desliza para ver tu carrete',roll:'Tu carrete',
       empty:'Aún no hay fotos.<br>Haz una o sube una de tu galería.',rollHint:'Fotograma {a} de {b} \u00B7 toca un negativo para elegirlo para Imprimir o WhatsApp',save:'Guardar',paper:'Papel',close:'Cerrar',easyBtn:'Visita EasyLandX',
       tip:'Consejo: en Safari toca Compartir → Añadir a pantalla de inicio para pantalla completa real.',chipFront:'Frontal · cámara selfie',chipBack:'Trasera · cámara trasera',
@@ -832,6 +855,34 @@
     toast(t('ready'));
   }
   $('#packFront').addEventListener('click', openPack);
+
+  /* ---------- PWA: service worker, install button, iOS helper ---------- */
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./dispo-sw.js').catch(function(){});
+    });
+  }
+  (function(){
+    var btn = $('#btnInstall'), help = $('#iosHelp'), deferred = null;
+    var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if(standalone) return;                       // already installed / running as an app: show nothing
+    if(isIOS){ help.hidden = false; }            // iOS has no install prompt: explain Share -> Add to Home Screen
+
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault();
+      deferred = e;
+      btn.hidden = false;
+    });
+    btn.addEventListener('click', function(){
+      if(!deferred) return;
+      deferred.prompt();
+      deferred.userChoice.then(function(){ deferred = null; btn.hidden = true; }).catch(function(){});
+    });
+    window.addEventListener('appinstalled', function(){ deferred = null; btn.hidden = true; help.hidden = true; });
+  })();
 
   /* ---------- Boot ---------- */
   applyLang();
