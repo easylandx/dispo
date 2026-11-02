@@ -260,11 +260,6 @@
   .installbtn[hidden]{display:none}
   .installbtn:active{transform:scale(.95)}
   .installbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
-  .ioshelp{
-    margin:0;width:min(92vw,460px);text-align:center;font-size:12px;font-weight:700;line-height:1.35;
-    background:rgba(255,255,255,.75);border-radius:14px;padding:8px 14px
-  }
-  .ioshelp[hidden]{display:none}
   @media (prefers-reduced-motion:reduce){.flipper{transition:none}}
 </style>
 </head>
@@ -334,7 +329,6 @@
       </button>
     </div>
     <input type="file" id="fileInput" accept="image/*" hidden>
-    <p class="ioshelp" id="iosHelp" data-i18n="iosHelp" hidden>To install: tap Share, then Add to Home Screen.</p>
     <p class="hint" data-i18n="hint">Tap the camera to flip it · scroll down for your roll</p>
   </section>
 
@@ -863,13 +857,13 @@
     });
   }
   (function(){
-    var btn = $('#btnInstall'), help = $('#iosHelp'), deferred = null;
+    var btn = $('#btnInstall'), deferred = null, iosMode = false;
     var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
     var ua = navigator.userAgent || '';
     var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     if(standalone) return;                       // already installed / running as an app: show nothing
-    if(isIOS){ help.hidden = false; }            // iOS has no install prompt: explain Share -> Add to Home Screen
+    if(isIOS){ iosMode = true; btn.hidden = false; }   // iOS has no install prompt: the pill shows the Share -> Add to Home Screen steps on tap
 
     window.addEventListener('beforeinstallprompt', function(e){
       e.preventDefault();
@@ -877,11 +871,16 @@
       btn.hidden = false;
     });
     btn.addEventListener('click', function(){
+      if(iosMode){
+        toast(t('iosHelp'));
+        clearTimeout(toast.t); toast.t = setTimeout(function(){ toastEl.classList.remove('show'); }, 7000);
+        return;
+      }
       if(!deferred) return;
       deferred.prompt();
       deferred.userChoice.then(function(){ deferred = null; btn.hidden = true; }).catch(function(){});
     });
-    window.addEventListener('appinstalled', function(){ deferred = null; btn.hidden = true; help.hidden = true; });
+    window.addEventListener('appinstalled', function(){ deferred = null; btn.hidden = true; });
   })();
 
   /* ---------- Boot ---------- */
