@@ -370,7 +370,7 @@
       vfBlocked:'Camera blocked or unavailable. Allow access, or upload a photo instead.',flashOn:'Flash on',flashOff:'Flash off',
       camNotReady:'Camera not ready. Enable it or upload a photo.',photoTaken:'Photo taken · {n}/27',photoAdded:'Photo added to your roll',
       readErr:'Could not read that image.',needPhoto:'Take or upload a photo first.',saved:'Saved',
-      waDesktop:'Photo saved to Downloads. Attach it in WhatsApp.',developing:'Developing…',fresh:'Fresh from the lab ✨',
+      waDesktop:'Photo saved to Downloads. Attach it in WhatsApp.',waCopied:'Photo copied. Paste it in WhatsApp with Ctrl+V.',developing:'Developing…',fresh:'Fresh from the lab ✨',
       waText:'Taken with DispoPro',langAria:'Change language'},
     es:{tag:'Cámara desechable',photoBtn:'FOTO',packAria:'Toca para abrir el envoltorio',tapOpen:'Toca para abrir',vfPack:'Abre el envoltorio para empezar a disparar.',ready:'Cámara desembalada · ¡lista para disparar!',noTorch:'Este navegador no puede activar el flash real del móvil (Safari en iPhone no lo permite), así que se ilumina la pantalla.',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
       upload:'Subir',print:'Imprimir',hint:'Toca la cámara para girarla · desliza para ver tu carrete',roll:'Tu carrete',
@@ -380,7 +380,7 @@
       vfBlocked:'Cámara bloqueada o no disponible. Permite el acceso o sube una foto.',flashOn:'Flash activado',flashOff:'Flash desactivado',
       camNotReady:'Cámara no lista. Actívala o sube una foto.',photoTaken:'Foto hecha · {n}/27',photoAdded:'Foto añadida a tu carrete',
       readErr:'No se pudo leer esa imagen.',needPhoto:'Haz o sube una foto primero.',saved:'Guardada',
-      waDesktop:'Foto guardada en Descargas. Adjúntala en WhatsApp.',developing:'Revelando…',fresh:'Recién salida del laboratorio ✨',
+      waDesktop:'Foto guardada en Descargas. Adjúntala en WhatsApp.',waCopied:'Foto copiada. Pégala en WhatsApp con Ctrl+V.',developing:'Revelando…',fresh:'Recién salida del laboratorio ✨',
       waText:'Foto hecha con DispoPro',langAria:'Cambiar idioma'}
   };
   var FLAGS = {
@@ -606,7 +606,7 @@
     var p = { raw: canvas, flash: flash, thumb: canvas.toDataURL('image/jpeg', .72), blob: null, url: null };
     p.ready = new Promise(function(res){
       setTimeout(function(){
-        var out = developPrint(canvas, flash);
+        var out = developPrint(canvas, flash); p.out = out;
         out.toBlob(function(b){ p.blob = b; p.url = URL.createObjectURL(b); res(p); }, 'image/jpeg', .92);
       }, 30);
     });
@@ -746,6 +746,17 @@
   }
 
   /* ---------- WhatsApp ---------- */
+  // Copies the developed photo as PNG (the format browsers accept on the clipboard).
+  // Must be called synchronously from a click so the clipboard write keeps user activation.
+  function copyImage(p){
+    if(!(navigator.clipboard && window.ClipboardItem)) return Promise.reject(new Error('no clipboard'));
+    var pngPromise = p.ready.then(function(){
+      return new Promise(function(res, rej){
+        p.out.toBlob(function(b){ b ? res(b) : rej(new Error('toBlob')); }, 'image/png');
+      });
+    });
+    return navigator.clipboard.write([new ClipboardItem({'image/png': pngPromise})]);
+  }
   function isMobile(){
     var ua = navigator.userAgent || '';
     return /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -756,9 +767,11 @@
     var text = t('waText') + '\n' + LINK;
 
     if(!isMobile()){
-      // Desktop: open WhatsApp Web directly, no questions asked
+      // Desktop: copy the photo to the clipboard (no file saved), then open WhatsApp Web to paste it
+      var copied = copyImage(p);
       window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank', 'noopener');
-      p.ready.then(function(){ download(p); toast(t('waDesktop')); });
+      copied.then(function(){ toast(t('waCopied')); })
+            .catch(function(){ p.ready.then(function(){ download(p); toast(t('waDesktop')); }); });
       return;
     }
 
