@@ -216,8 +216,8 @@
 
   /* ---------- Effects ---------- */
   .flashfx{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
-  .flashfx.hold{opacity:1;animation:none;background:#fffdf0}
-  .flashfx.fire{animation:fx .45s ease-out}
+  .flashfx.hold{opacity:1;animation:none;background:#fff}
+  .flashfx.fire{animation:fx 1.35s ease-out}
   @keyframes fx{0%{opacity:.95}100%{opacity:0}}
   .toast{
     position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);transform:translate(-50%,30px);opacity:0;
@@ -619,30 +619,22 @@
     try{ caps = (track && track.getCapabilities) ? track.getCapabilities() : {}; }catch(e){}
 
     function screenFlash(){
-      // SELFIE SCREEN FLASH:
-      // Turn the display white, allow that white frame to render, then capture
-      // immediately on the next animation frame. This keeps the shutter capture
-      // synchronized with the visible white flash instead of waiting for a later
-      // camera frame callback.
-      var fx = $('#flashFx');
-      fx.classList.remove('fire');
-      fx.classList.add('hold');
-
+      // light the scene with the screen (works for the selfie camera; fallback when there is no torch)
+      // 1) screen goes full white, 2) give the camera time to adapt to the light,
+      // 3) grab a frame that arrives while the screen is STILL white, 4) only then fade the white out
+      var fx = $('#flashFx'); fx.classList.remove('fire'); fx.classList.add('hold');
       var done = false;
       function shoot(){
-        if(done) return;
-        done = true;
-        doCapture(false); // capture while the white screen overlay is active
+        if(done) return; done = true;
+        doCapture(false);            // frame is read first; the white fades out right after
         shooting = false;
       }
-
-      // Two animation frames ensure the browser has had a chance to paint white.
-      requestAnimationFrame(function(){
-        requestAnimationFrame(shoot);
-      });
-
-      // Safety fallback for browsers that pause animation frames unexpectedly.
-      setTimeout(shoot, 180);
+      setTimeout(function(){
+        if(video.requestVideoFrameCallback){
+          video.requestVideoFrameCallback(shoot);   // next fresh frame, captured under full white
+          setTimeout(shoot, 600);                   // safety net if no frame callback arrives
+        } else shoot();
+      }, 1100);
     }
 
     if(side === 'back' && caps.torch){
