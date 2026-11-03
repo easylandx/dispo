@@ -12,7 +12,7 @@
 <link rel="manifest" href="dispo.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="description" content="DispoPro — a single-use camera in your pocket. Flip it, shoot it, print it, send it.">
+<meta name="description" content="DispoPro — a single-use camera in your pocket. Flip it, shoot it, develop it, send it.">
 <style>
   :root{
     --aqua:#bdeee6; --mint:#dcf8f1; --coral:#ff8f7a; --pink:#ffd5cc; --lemon:#fff2a8;
@@ -157,12 +157,14 @@
 
   .toprow{width:100%;max-width:460px;display:flex;justify-content:flex-end}
   .lang{
-    display:flex;align-items:center;gap:8px;height:38px;padding:0 14px 0 10px;border:0;border-radius:999px;background:#fff;
-    font-weight:800;font-size:14px;letter-spacing:.06em;box-shadow:0 4px 10px rgba(31,43,51,.14)
+    display:flex;align-items:center;gap:2px;height:38px;padding:3px;border:0;border-radius:999px;background:#fff;
+    font-weight:800;font-size:13px;letter-spacing:.06em;box-shadow:0 4px 10px rgba(31,43,51,.14)
   }
-  .lang:active{transform:scale(.95)}
-  .lang #flag{display:block;width:28px;height:18px;border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
-  .lang #flag svg{display:block;width:100%;height:100%}
+  .lang:active{transform:scale(.97)}
+  .lang .seg{display:flex;align-items:center;gap:6px;height:32px;padding:0 11px 0 8px;border-radius:999px;opacity:.55;transition:background .2s,opacity .2s,color .2s}
+  .lang .seg.on{background:var(--sun);opacity:1}
+  .lang .fl{display:block;width:24px;height:16px;border-radius:3px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+  .lang .fl svg{display:block;width:100%;height:100%}
   .easybtn{
     display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;text-decoration:none;font-weight:800;font-size:15px;
     padding:14px 24px;border-radius:16px;box-shadow:0 6px 0 #a31a22,0 10px 18px rgba(229,48,58,.3);margin-bottom:14px
@@ -224,22 +226,45 @@
   }
   .toast.show{opacity:1;transform:translate(-50%,0)}
 
-  /* ---------- Print modal ---------- */
+  /* ---------- Develop modal: developing screen + pick screen ---------- */
   .modal{position:fixed;inset:0;z-index:70;background:rgba(255,242,168,.96);display:flex;align-items:center;justify-content:center;
     padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 12px);overflow:auto}
   .modal[hidden]{display:none}
-  .sheet{width:min(92vw,440px);display:flex;flex-direction:column;align-items:center;gap:14px;margin:auto}
-  .sheet img{width:100%;max-height:62svh;object-fit:contain;box-shadow:0 18px 40px rgba(31,43,51,.35);background:#fbf7ee;border-radius:3px}
-  .sheet img.develop{animation:dev 4.5s ease-out forwards}
+  .sheet{width:min(100%,460px);display:flex;flex-direction:column;align-items:center;gap:14px;margin:auto}
+  .stagebox{width:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .stagebox[hidden]{display:none}
+  .cap{margin:0;font-weight:700;font-size:14px;opacity:.75;text-align:center}
   @keyframes dev{
     0%{filter:brightness(2.2) contrast(.4) saturate(0) blur(8px);opacity:.55}
     60%{filter:brightness(1.3) contrast(.8) saturate(.5) blur(3px);opacity:.9}
     100%{filter:none;opacity:1}
   }
-  .cap{margin:0;font-weight:700;font-size:14px;opacity:.75}
+  /* screen 1 */
+  .devgrid{--cols:3;width:100%;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));gap:10px;align-items:start;
+    max-height:64svh;overflow-y:auto;padding:6px 4px 10px;-webkit-overflow-scrolling:touch}
+  .devgrid.one{width:64%}
+  .dp{padding:0;border:0;background:#fbf7ee;border-radius:3px;box-shadow:0 8px 18px rgba(31,43,51,.28);overflow:hidden;cursor:pointer}
+  .dp img{display:block;width:100%;height:auto;animation:dev 3.2s ease-out both}
+  /* screen 2 */
+  .pickwrap{position:relative;width:100%}
+  .track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;scrollbar-width:none}
+  .track::-webkit-scrollbar{display:none}
+  .slide{flex:0 0 100%;height:min(60svh,560px);display:flex;align-items:center;justify-content:center;
+    scroll-snap-align:center;scroll-snap-stop:always}
+  .slide img{display:block;width:auto;height:auto;max-width:calc(100% - 76px);max-height:100%;background:#fbf7ee;border-radius:3px;
+    box-shadow:0 18px 40px rgba(31,43,51,.35);-webkit-user-drag:none;user-select:none}
+  .nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;padding:0;border:0;border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(31,43,51,.22)}
+  .nav.prev{left:0}
+  .nav.next{right:0}
+  .nav:active{transform:translateY(-50%) scale(.92)}
+  .nav:disabled{opacity:.3;pointer-events:none}
+  .nav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
   .mbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
   .mbtns .pill{height:50px}
   .mbtns .close{grid-column:1/-1;background:var(--ink);color:#fff}
+  .printonly{display:none}
 
   /* Your roll = red section: light text */
   .s2 h2,.s2 .rollhint{color:#fff}
@@ -247,7 +272,7 @@
   .s2 .empty{color:#fff;border-color:rgba(255,255,255,.6);opacity:1}
   @media print{
     body.printing *{visibility:hidden}
-    body.printing #printImg{visibility:visible;position:absolute;left:0;top:0;width:100%;max-height:none;box-shadow:none;animation:none;filter:none;opacity:1}
+    body.printing #printImg{display:block;visibility:visible;position:absolute;left:0;top:0;width:100%;max-height:none;box-shadow:none;animation:none;filter:none;opacity:1}
   }
 
   /* ---------- PWA: install button + iOS helper ---------- */
@@ -271,7 +296,7 @@
       <button class="installbtn" id="btnInstall" type="button" hidden>
         <svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg><span data-i18n="install">Install app</span>
       </button>
-      <button class="lang" id="btnLang" type="button"><span id="flag"></span><b id="langCode">EN</b></button>
+      <button class="lang" id="btnLang" type="button"><span class="seg" data-l="en"><span class="fl" id="flagEN"></span><b>EN</b></span><span class="seg" data-l="es"><span class="fl" id="flagES"></span><b>ES</b></span></button>
     </div>
     <header>
       <div class="logo">Dispo<b>Pro</b></div>
@@ -321,14 +346,14 @@
       <button class="pill" id="btnUpload" type="button">
         <svg viewBox="0 0 24 24"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><span data-i18n="upload">Upload</span>
       </button>
-      <button class="pill print" id="btnPrint" type="button">
-        <svg viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg><span data-i18n="print">Print</span>
+      <button class="pill print" id="btnDevelop" type="button">
+        <svg viewBox="0 0 24 24"><path d="M12 3.2c3.4 3.8 6 7 6 10.1a6 6 0 0 1-12 0c0-3.1 2.6-6.3 6-10.1z"/><path d="M9.2 14.2a3 3 0 0 0 2.4 2.5"/></svg><span data-i18n="develop">Develop</span>
       </button>
       <button class="pill wa" id="btnWA" type="button">
         <svg viewBox="0 0 24 24"><path d="M3 21l1.6-4.6A8.5 8.5 0 1 1 8 19.6z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8a4.5 4.5 0 0 1-2-2l.8-1-1-2z"/></svg>WhatsApp
       </button>
     </div>
-    <input type="file" id="fileInput" accept="image/*" hidden>
+    <input type="file" id="fileInput" accept="image/*" multiple hidden>
     <p class="hint" data-i18n="hint">Tap the camera to flip it · scroll down for your roll</p>
   </section>
 
@@ -354,22 +379,45 @@
 
 <div class="modal" id="modal" hidden>
   <div class="sheet">
-    <img id="printImg" alt="Developed print">
-    <p class="cap" id="printCap">Developing…</p>
-    <div class="mbtns">
-      <button class="pill" id="mSave" type="button">
-        <svg viewBox="0 0 24 24"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg><span data-i18n="save">Save</span>
-      </button>
-      <button class="pill wa" id="mWA" type="button">
-        <svg viewBox="0 0 24 24"><path d="M3 21l1.6-4.6A8.5 8.5 0 1 1 8 19.6z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8a4.5 4.5 0 0 1-2-2l.8-1-1-2z"/></svg>WhatsApp
-      </button>
-      <button class="pill print" id="mPaper" type="button">
-        <svg viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg><span data-i18n="paper">Paper</span>
-      </button>
-      <button class="pill close" id="mClose" type="button" data-i18n="close">Close</button>
+
+    <!-- screen 1: the whole roll develops -->
+    <div class="stagebox" id="devStage">
+      <div class="devgrid" id="devGrid"></div>
+      <p class="cap" id="devCap">Developing…</p>
+      <div class="mbtns">
+        <button class="pill close" id="dClose" type="button" data-i18n="close">Close</button>
+      </div>
     </div>
+
+    <!-- screen 2: swipe / arrows to choose the one to send -->
+    <div class="stagebox" id="pickStage" hidden>
+      <div class="pickwrap">
+        <div class="track" id="pTrack"></div>
+        <button class="nav prev" id="pPrev" type="button" aria-label="Previous photo" data-i18n-aria="prevAria">
+          <svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg>
+        </button>
+        <button class="nav next" id="pNext" type="button" aria-label="Next photo" data-i18n-aria="nextAria">
+          <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+      <p class="cap" id="pickCap"></p>
+      <div class="mbtns">
+        <button class="pill" id="mSave" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 4v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg><span data-i18n="save">Save</span>
+        </button>
+        <button class="pill wa" id="mWA" type="button">
+          <svg viewBox="0 0 24 24"><path d="M3 21l1.6-4.6A8.5 8.5 0 1 1 8 19.6z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8a4.5 4.5 0 0 1-2-2l.8-1-1-2z"/></svg>WhatsApp
+        </button>
+        <button class="pill print" id="mPaper" type="button">
+          <svg viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg><span data-i18n="paper">Paper</span>
+        </button>
+        <button class="pill close" id="mClose" type="button" data-i18n="close">Close</button>
+      </div>
+    </div>
+
   </div>
 </div>
+<img id="printImg" class="printonly" alt="Developed print">
 
 <script>
 (function(){
@@ -380,25 +428,27 @@
   /* ---------- Languages ---------- */
   var I18N = {
     en:{install:'Install app',iosHelp:'To install on iPhone or iPad: tap Share \u2192 Add to Home Screen.',tag:'Single-use camera',photoBtn:'PHOTO',packAria:'Tap to open the packaging',tapOpen:'Tap to open',vfPack:'Open the packaging to start shooting.',ready:'Camera unwrapped · ready to shoot!',noTorch:"This browser can't fire the phone's real flash (iPhone Safari doesn't allow it), so the screen lights up instead.",stageAria:'Camera. Tap to flip.',flipAria:'Flip view',flashAria:'Flash',enableCam:'Enable camera',
-      upload:'Upload',print:'Print',hint:'Tap the camera to flip it · scroll down for your roll',roll:'Your roll',
-      empty:'No photos yet.<br>Take one or upload from your library.',rollHint:'Frame {a} of {b} \u00B7 tap a negative to pick it for Print or WhatsApp',save:'Save',paper:'Paper',close:'Close',easyBtn:'Visit EasyLandX',
+      upload:'Upload',develop:'Develop',hint:'Tap the camera to flip it · scroll down for your roll',roll:'Your roll',
+      empty:'No photos yet.<br>Take one or upload from your library.',rollHint:'Frame {a} of {b} \u00B7 tap a negative to pick it for Develop or WhatsApp',save:'Save',paper:'Paper',close:'Close',easyBtn:'Visit EasyLandX',
       tip:'Tip: in Safari tap Share → Add to Home Screen for true full screen.',chipFront:'Front · selfie camera',chipBack:'Back · rear camera',
       vfAsk:'Allow camera access to see through the viewfinder.',vfNone:'Camera is not available here. You can still upload a photo.',
       vfBlocked:'Camera blocked or unavailable. Allow access, or upload a photo instead.',flashOn:'Flash on',flashOff:'Flash off',
       camNotReady:'Camera not ready. Enable it or upload a photo.',photoTaken:'Photo taken · {n}/27',photoAdded:'Photo added to your roll',
       readErr:'Could not read that image.',needPhoto:'Take or upload a photo first.',saved:'Saved',
       waDesktop:'Photo saved to Downloads. Attach it in WhatsApp.',waCopied:'Photo copied. Paste it in WhatsApp with Ctrl+V.',developing:'Developing…',fresh:'Fresh from the lab ✨',
-      waText:'Taken with DispoPro',langAria:'Change language'},
+      waText:'Taken with DispoPro',langAria:'Change language',
+      photosAdded:'{n} photos added to your roll',devProgress:'Developing {a} of {b}\u2026',pickHint:'Photo {a} of {b} \u00B7 swipe or tap the arrows to choose',prevAria:'Previous photo',nextAria:'Next photo'},
     es:{install:'Instalar app',iosHelp:'Para instalar en iPhone o iPad: toca Compartir \u2192 A\u00f1adir a pantalla de inicio.',tag:'Cámara desechable',photoBtn:'FOTO',packAria:'Toca para abrir el envoltorio',tapOpen:'Toca para abrir',vfPack:'Abre el envoltorio para empezar a disparar.',ready:'Cámara desembalada · ¡lista para disparar!',noTorch:'Este navegador no puede activar el flash real del móvil (Safari en iPhone no lo permite), así que se ilumina la pantalla.',stageAria:'Cámara. Toca para girar.',flipAria:'Girar vista',flashAria:'Flash',enableCam:'Activar cámara',
-      upload:'Subir',print:'Imprimir',hint:'Toca la cámara para girarla · desliza para ver tu carrete',roll:'Tu carrete',
-      empty:'Aún no hay fotos.<br>Haz una o sube una de tu galería.',rollHint:'Fotograma {a} de {b} \u00B7 toca un negativo para elegirlo para Imprimir o WhatsApp',save:'Guardar',paper:'Papel',close:'Cerrar',easyBtn:'Visita EasyLandX',
+      upload:'Subir',develop:'Revelar',hint:'Toca la cámara para girarla · desliza para ver tu carrete',roll:'Tu carrete',
+      empty:'Aún no hay fotos.<br>Haz una o sube una de tu galería.',rollHint:'Fotograma {a} de {b} \u00B7 toca un negativo para elegirlo para Revelar o WhatsApp',save:'Guardar',paper:'Papel',close:'Cerrar',easyBtn:'Visita EasyLandX',
       tip:'Consejo: en Safari toca Compartir → Añadir a pantalla de inicio para pantalla completa real.',chipFront:'Frontal · cámara selfie',chipBack:'Trasera · cámara trasera',
       vfAsk:'Permite el acceso a la cámara para ver por el visor.',vfNone:'La cámara no está disponible aquí. Aún puedes subir una foto.',
       vfBlocked:'Cámara bloqueada o no disponible. Permite el acceso o sube una foto.',flashOn:'Flash activado',flashOff:'Flash desactivado',
       camNotReady:'Cámara no lista. Actívala o sube una foto.',photoTaken:'Foto hecha · {n}/27',photoAdded:'Foto añadida a tu carrete',
       readErr:'No se pudo leer esa imagen.',needPhoto:'Haz o sube una foto primero.',saved:'Guardada',
       waDesktop:'Foto guardada en Descargas. Adjúntala en WhatsApp.',waCopied:'Foto copiada. Pégala en WhatsApp con Ctrl+V.',developing:'Revelando…',fresh:'Recién salida del laboratorio ✨',
-      waText:'Foto hecha con DispoPro',langAria:'Cambiar idioma'}
+      waText:'Foto hecha con DispoPro',langAria:'Cambiar idioma',
+      photosAdded:'{n} fotos a\u00f1adidas a tu carrete',devProgress:'Revelando {a} de {b}\u2026',pickHint:'Foto {a} de {b} \u00B7 desliza o toca las flechas para elegir',prevAria:'Foto anterior',nextAria:'Foto siguiente'}
   };
   var FLAGS = {
     en:'<svg viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice"><clipPath id="fs"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="ft"><path d="M30 15h30v15zv15h-30zh-30v-15zv-15h30z"/></clipPath><g clip-path="url(#fs)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0 60 30M60 0 0 30" stroke="#fff" stroke-width="6"/><path d="M0 0 60 30M60 0 0 30" clip-path="url(#ft)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></g></svg>',
@@ -468,7 +518,6 @@
   var toastEl = $('#toast');
   var vfKey = 'vfPack', ready = false;
   function setVf(k){ vfKey = k; vfText.textContent = t(k); }
-  var printDone = false;
 
   function toast(msg){
     toastEl.textContent = msg; toastEl.classList.add('show');
@@ -602,32 +651,70 @@
   /* ---------- Upload ---------- */
   $('#btnUpload').addEventListener('click', function(){ $('#fileInput').click(); });
   $('#fileInput').addEventListener('change', function(e){
-    var f = e.target.files && e.target.files[0]; if(!f) return;
-    var url = URL.createObjectURL(f), img = new Image();
-    img.onload = function(){
-      var k = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight));
-      var c = document.createElement('canvas');
-      c.width = Math.round(img.naturalWidth*k); c.height = Math.round(img.naturalHeight*k);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(url);
-      addPhoto(c, flashOn);
-      toast(t('photoAdded'));
-      document.getElementById('roll').scrollIntoView({behavior:'smooth'});
-    };
-    img.onerror = function(){ toast(t('readErr')); };
-    img.src = url; e.target.value = '';
+    var files = Array.prototype.slice.call(e.target.files || []);
+    e.target.value = '';
+    if(!files.length) return;
+    files = files.slice(-27);                      // a roll holds 27 frames
+    var added = 0;
+    // one photo at a time keeps memory low on phones
+    (function next(i){
+      if(i >= files.length){
+        if(added){
+          toast(added > 1 ? t('photosAdded').replace('{n}', added) : t('photoAdded'));
+          document.getElementById('roll').scrollIntoView({behavior:'smooth'});
+        } else toast(t('readErr'));
+        return;
+      }
+      var url = URL.createObjectURL(files[i]), img = new Image();
+      img.onload = function(){
+        var k = Math.min(1, 1400 / Math.max(img.naturalWidth, img.naturalHeight));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth*k); c.height = Math.round(img.naturalHeight*k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        addPhoto(c, flashOn); added++;
+        setTimeout(function(){ next(i + 1); }, 0);
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); next(i + 1); };
+      img.src = url;
+    })(0);
   });
 
   /* ---------- Roll ---------- */
+  // Everything lives in memory only (nothing is saved to storage or uploaded).
+  // To keep 27 photos light, the big canvases are released as soon as a photo is developed.
+  function scaledURL(src, maxSide, q){
+    var k = Math.min(1, maxSide / Math.max(src.width, src.height));
+    var c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(src.width * k)); c.height = Math.max(1, Math.round(src.height * k));
+    var x = c.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
+    x.drawImage(src, 0, 0, c.width, c.height);
+    var u = c.toDataURL('image/jpeg', q); c.width = c.height = 0; return u;
+  }
+  function dataURLToBlob(u){
+    var parts = u.split(','), bin = atob(parts[1]), a = new Uint8Array(bin.length);
+    for(var i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+    return new Blob([a], {type:'image/jpeg'});
+  }
+  function dropPhoto(p){ p.dropped = true; if(p.url) URL.revokeObjectURL(p.url); }
   function addPhoto(canvas, flash){
-    var p = { raw: canvas, flash: flash, thumb: canvas.toDataURL('image/jpeg', .72), blob: null, url: null };
+    var p = { flash: flash, thumb: scaledURL(canvas, 520, .8), small: null, blob: null, url: null, dropped: false };
     p.ready = new Promise(function(res){
       setTimeout(function(){
-        var out = developPrint(canvas, flash); p.out = out;
-        out.toBlob(function(b){ p.blob = b; p.url = URL.createObjectURL(b); res(p); }, 'image/jpeg', .92);
+        var out = developPrint(canvas, flash);
+        p.small = scaledURL(out, 260, .82);          // contact-sheet thumbnail
+        canvas.width = canvas.height = 0;            // free the raw capture
+        out.toBlob(function(b){
+          if(!b){ b = dataURLToBlob(out.toDataURL('image/jpeg', .92)); }
+          p.blob = b; p.url = URL.createObjectURL(b);
+          if(p.dropped) URL.revokeObjectURL(p.url);
+          out.width = out.height = 0;                // free the developed canvas (the JPEG blob is kept)
+          res(p);
+        }, 'image/jpeg', .92);
       }, 30);
     });
-    photos.unshift(p); if(photos.length > 27) photos.pop();
+    photos.unshift(p);
+    if(photos.length > 27) dropPhoto(photos.pop());  // 27 frames, like a real roll: the oldest makes room
     cur = 0; renderRoll(true);
   }
   function updateHint(){
@@ -732,27 +819,138 @@
     var o = out.getContext('2d');
     o.fillStyle = '#fbf7ee'; o.fillRect(0, 0, out.width, out.height);
     o.shadowColor = 'rgba(0,0,0,.25)'; o.shadowBlur = 6; o.drawImage(c, pad, pad); o.shadowBlur = 0;
+    c.width = c.height = 0; s.width = s.height = 0;
     return out;
   }
 
-  /* ---------- Print modal ---------- */
-  var modal = $('#modal'), printImg = $('#printImg');
-  function showPrint(){
-    var p = photos[cur];
-    if(!p){ toast(t('needPhoto')); return; }
-    modal.hidden = false; printDone = false; $('#printCap').textContent = t('developing');
-    printImg.classList.remove('develop'); printImg.removeAttribute('src');
-    p.ready.then(function(){
-      printImg.src = p.url; void printImg.offsetWidth; printImg.classList.add('develop');
-      setTimeout(function(){ printDone = true; $('#printCap').textContent = t('fresh'); }, 4200);
+  /* ---------- Develop: whole roll develops, then pick one to send ---------- */
+  var modal = $('#modal'), devStage = $('#devStage'), pickStage = $('#pickStage');
+  var devGrid = $('#devGrid'), devCap = $('#devCap'), track = $('#pTrack'), pickCap = $('#pickCap');
+  var order = [], slides = [], pIdx = 0, devTimers = [], devRun = 0;
+  var devCapKey = 'developing', devCapA = 0, devCapB = 0;
+  var RM = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  function later(fn, ms){ devTimers.push(setTimeout(fn, ms)); }
+  function clearDevTimers(){ devTimers.forEach(clearTimeout); devTimers = []; }
+  function renderDevCap(){
+    devCap.textContent = devCapKey === 'progress'
+      ? t('devProgress').replace('{a}', devCapA).replace('{b}', devCapB)
+      : t(devCapKey);
+  }
+  function setDevCap(key, a, b){ devCapKey = key; devCapA = a || 0; devCapB = b || 0; renderDevCap(); }
+  function renderPickCap(){
+    if(pickStage.hidden || !order.length) return;
+    pickCap.textContent = t('pickHint').replace('{a}', pIdx + 1).replace('{b}', order.length);
+  }
+
+  function showDevelop(){
+    if(!photos.length){ toast(t('needPhoto')); return; }
+    var run = ++devRun;
+    clearDevTimers();
+    modal.hidden = false; devStage.hidden = false; pickStage.hidden = true;
+    devGrid.innerHTML = ''; devGrid.className = 'devgrid';
+    setDevCap('developing');
+    var list = photos.slice();
+    Promise.all(list.map(function(p){ return p.ready; })).then(function(){
+      if(run !== devRun || modal.hidden || devStage.hidden) return;
+      var n = list.length;
+      order = []; for(var i = n - 1; i >= 0; i--) order.push(i);     // roll order: frame 1 (oldest) ... newest
+      devGrid.style.setProperty('--cols', n === 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5);
+      devGrid.classList.toggle('one', n === 1);
+      var dur = RM ? .01 : 3.2, step = RM ? 0 : Math.min(.14, 1.3 / n);
+      order.forEach(function(pi, k){
+        var p = photos[pi];
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'dp';
+        var im = new Image(); im.alt = ''; im.src = p.small || p.url; im.draggable = false;
+        im.style.animationDuration = dur + 's'; im.style.animationDelay = (k * step) + 's';
+        b.appendChild(im);
+        b.addEventListener('click', function(){ cur = pi; goPick(); });   // tap a print to jump straight to it
+        devGrid.appendChild(b);
+        later(function(){ setDevCap('progress', k + 1, n); }, (k * step + dur) * 1000);
+      });
+      later(function(){ setDevCap('fresh'); }, ((n - 1) * step + dur) * 1000 + 50);
+      later(goPick, ((n - 1) * step + dur) * 1000 + 850);
     });
   }
-  $('#btnPrint').addEventListener('click', showPrint);
-  $('#mClose').addEventListener('click', function(){ modal.hidden = true; });
+
+  // only a few slides keep their image loaded, so 27 full-size prints never sit in memory at once
+  function loadAround(idx){
+    slides.forEach(function(im, j){
+      var want = Math.abs(j - idx) <= 2, has = im.hasAttribute('src');
+      if(want && !has) im.src = photos[order[j]].url;
+      else if(!want && has) im.removeAttribute('src');
+    });
+  }
+  function updatePick(){
+    loadAround(pIdx);
+    cur = order[pIdx];
+    renderPickCap();
+    $('#pPrev').disabled = pIdx <= 0;
+    $('#pNext').disabled = pIdx >= order.length - 1;
+  }
+  function goPick(){
+    clearDevTimers();
+    if(!photos.length){ closeModal(); return; }
+    devStage.hidden = true; pickStage.hidden = false;
+    track.innerHTML = ''; slides = [];
+    order.forEach(function(){
+      var s = document.createElement('div'); s.className = 'slide';
+      var im = new Image(); im.alt = ''; im.draggable = false;
+      s.appendChild(im); track.appendChild(s); slides.push(im);
+    });
+    pIdx = order.indexOf(cur); if(pIdx < 0) pIdx = order.length - 1;
+    track.scrollLeft = pIdx * track.clientWidth;
+    updatePick();
+  }
+  var scrollRaf = 0;
+  track.addEventListener('scroll', function(){
+    if(scrollRaf) return;
+    scrollRaf = requestAnimationFrame(function(){
+      scrollRaf = 0;
+      var w = track.clientWidth; if(!w || !order.length) return;
+      var k = Math.max(0, Math.min(order.length - 1, Math.round(track.scrollLeft / w)));
+      if(k !== pIdx){ pIdx = k; updatePick(); }
+    });
+  }, {passive:true});
+  function pickGo(d){
+    var k = pIdx + d; if(k < 0 || k >= order.length) return;
+    var x = k * track.clientWidth;
+    try{ track.scrollTo({left: x, behavior: 'smooth'}); }catch(e){ track.scrollLeft = x; }
+  }
+  $('#pPrev').addEventListener('click', function(){ pickGo(-1); });
+  $('#pNext').addEventListener('click', function(){ pickGo(1); });
+  document.addEventListener('keydown', function(e){
+    if(modal.hidden) return;
+    if(e.key === 'Escape'){ closeModal(); return; }
+    if(pickStage.hidden) return;
+    if(e.key === 'ArrowLeft'){ e.preventDefault(); pickGo(-1); }
+    else if(e.key === 'ArrowRight'){ e.preventDefault(); pickGo(1); }
+  });
+
+  function closeModal(){
+    devRun++; clearDevTimers();
+    modal.hidden = true;
+    slides.forEach(function(im){ im.removeAttribute('src'); });
+    track.innerHTML = ''; slides = []; devGrid.innerHTML = '';
+    document.body.classList.remove('printing');
+    renderRoll(true);                                  // the roll now highlights the photo you picked
+  }
+  $('#btnDevelop').addEventListener('click', showDevelop);
+  $('#mClose').addEventListener('click', closeModal);
+  $('#dClose').addEventListener('click', closeModal);
   $('#mSave').addEventListener('click', function(){ var p = photos[cur]; if(p) p.ready.then(function(){ download(p); toast(t('saved')); }); });
   $('#mPaper').addEventListener('click', function(){
-    document.body.classList.add('printing');
-    setTimeout(function(){ window.print(); setTimeout(function(){ document.body.classList.remove('printing'); }, 400); }, 50);
+    var p = photos[cur]; if(!p) return;
+    p.ready.then(function(){
+      var pi = $('#printImg'), fired = false;
+      function go(){
+        if(fired) return; fired = true;
+        document.body.classList.add('printing');
+        setTimeout(function(){ window.print(); setTimeout(function(){ document.body.classList.remove('printing'); }, 400); }, 50);
+      }
+      pi.onload = go; pi.src = p.url;
+      if(pi.complete && pi.naturalWidth) go();
+    });
   });
   $('#mWA').addEventListener('click', sendWA);
   $('#btnWA').addEventListener('click', sendWA);
@@ -769,7 +967,14 @@
     if(!(navigator.clipboard && window.ClipboardItem)) return Promise.reject(new Error('no clipboard'));
     var pngPromise = p.ready.then(function(){
       return new Promise(function(res, rej){
-        p.out.toBlob(function(b){ b ? res(b) : rej(new Error('toBlob')); }, 'image/png');
+        var im = new Image();
+        im.onload = function(){
+          var c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight;
+          c.getContext('2d').drawImage(im, 0, 0);
+          c.toBlob(function(b){ c.width = c.height = 0; b ? res(b) : rej(new Error('toBlob')); }, 'image/png');
+        };
+        im.onerror = function(){ rej(new Error('decode')); };
+        im.src = p.url;
       });
     });
     return navigator.clipboard.write([new ClipboardItem({'image/png': pngPromise})]);
@@ -813,16 +1018,17 @@
     Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function(el){ el.textContent = t(el.getAttribute('data-i18n')); });
     Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-html]'), function(el){ el.innerHTML = t(el.getAttribute('data-i18n-html')); });
     Array.prototype.forEach.call(document.querySelectorAll('[data-i18n-aria]'), function(el){ el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
-    $('#flag').innerHTML = FLAGS[lang];
-    $('#langCode').textContent = lang.toUpperCase();
+    $('#flagEN').innerHTML = FLAGS.en; $('#flagES').innerHTML = FLAGS.es;
+    Array.prototype.forEach.call(document.querySelectorAll('#btnLang .seg'), function(el){ el.classList.toggle('on', el.getAttribute('data-l') === lang); });
     $('#btnLang').setAttribute('aria-label', t('langAria'));
     updateChip();
     updateHint();
     vfText.textContent = t(vfKey);
-    if(!modal.hidden || printDone) $('#printCap').textContent = t(printDone ? 'fresh' : 'developing');
+    renderDevCap(); renderPickCap();
   }
-  $('#btnLang').addEventListener('click', function(){
-    lang = lang === 'en' ? 'es' : 'en';
+  $('#btnLang').addEventListener('click', function(e){
+    var seg = e.target.closest && e.target.closest('.seg');
+    lang = seg ? seg.getAttribute('data-l') : (lang === 'en' ? 'es' : 'en');
     try{ localStorage.setItem('dispo-lang', lang); }catch(e){}
     applyLang();
   });
