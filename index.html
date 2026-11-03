@@ -620,8 +620,21 @@
 
     function screenFlash(){
       // light the scene with the screen (works for the selfie camera; fallback when there is no torch)
+      // 1) screen goes full white, 2) give the camera time to adapt to the light,
+      // 3) grab a frame that arrives while the screen is STILL white, 4) only then fade the white out
       var fx = $('#flashFx'); fx.classList.remove('fire'); fx.classList.add('hold');
-      setTimeout(function(){ doCapture(false); shooting = false; }, 300);
+      var done = false;
+      function shoot(){
+        if(done) return; done = true;
+        doCapture(false);            // frame is read first; the white fades out right after
+        shooting = false;
+      }
+      setTimeout(function(){
+        if(video.requestVideoFrameCallback){
+          video.requestVideoFrameCallback(shoot);   // next fresh frame, captured under full white
+          setTimeout(shoot, 350);                   // safety net if no frame callback arrives
+        } else shoot();
+      }, 450);
     }
 
     if(side === 'back' && caps.torch){
