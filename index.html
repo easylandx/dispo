@@ -600,12 +600,19 @@
     x.drawImage(video, sx, sy, sw, sh, 0, 0, c.width, c.height);
 
     clickSound();
-    if(flashOn && !viaTorch){
-      var fx = $('#flashFx'); fx.classList.remove('hold'); fx.classList.remove('fire'); void fx.offsetWidth; fx.classList.add('fire');
-    }
     stage.classList.remove('pop'); void stage.offsetWidth; stage.classList.add('pop');
     if(navigator.vibrate) navigator.vibrate(25);
+
+    // Finish reading and storing the camera frame BEFORE removing the white screen.
+    // In screen-flash mode, the captured frame is therefore taken while the display is white.
     addPhoto(c, flashOn);
+    if(flashOn && !viaTorch){
+      var fx = $('#flashFx');
+      fx.classList.remove('hold');
+      fx.classList.remove('fire');
+      void fx.offsetWidth;
+      fx.classList.add('fire');
+    }
     toast(t('photoTaken').replace('{n}', photos.length));
   }
   var shooting = false, torchWarned = false;
