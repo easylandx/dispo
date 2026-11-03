@@ -214,10 +214,10 @@
   footer a{color:inherit}
 
   /* ---------- Effects ---------- */
-  .flashfx{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:50}
-  .flashfx.hold{opacity:1;animation:none;background:#fff}
-  .flashfx.fire{animation:fx 1.35s ease-out}
-  @keyframes fx{0%{opacity:.95}100%{opacity:0}}
+  .flashfx{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9999}
+  .flashfx.hold{opacity:1 !important;animation:none;background:#fff}
+  .flashfx.fire{animation:fx .9s ease-out}
+  @keyframes fx{0%{opacity:1}100%{opacity:0}}
   .toast{
     position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);transform:translate(-50%,30px);opacity:0;
     background:var(--ink);color:#fff;padding:11px 18px;border-radius:14px;font-size:14px;font-weight:600;z-index:80;
@@ -601,9 +601,8 @@
     stage.classList.remove('pop'); void stage.offsetWidth; stage.classList.add('pop');
     if(navigator.vibrate) navigator.vibrate(25);
 
-    // Finish reading and storing the camera frame BEFORE removing the white screen.
-    // In screen-flash mode, the captured frame is therefore taken while the display is white.
-    addPhoto(c, flashOn);
+    // The camera frame has now been captured. Start fading the screen immediately,
+    // before thumbnail generation / photo development can make the shutter feel slow.
     if(flashOn && !viaTorch){
       var fx = $('#flashFx');
       fx.classList.remove('hold');
@@ -611,6 +610,7 @@
       void fx.offsetWidth;
       fx.classList.add('fire');
     }
+    addPhoto(c, flashOn);
     toast(t('photoTaken').replace('{n}', photos.length));
   }
   var shooting = false, torchWarned = false;
@@ -624,22 +624,27 @@
     try{ caps = (track && track.getCapabilities) ? track.getCapabilities() : {}; }catch(e){}
 
     function screenFlash(){
-      // light the scene with the screen (works for the selfie camera; fallback when there is no torch)
-      // 1) screen goes full white, 2) give the camera time to adapt to the light,
-      // 3) grab a frame that arrives while the screen is STILL white, 4) only then fade the white out
-      var fx = $('#flashFx'); fx.classList.remove('fire'); fx.classList.add('hold');
+      // Show a maximum-brightness white screen, then capture the very next
+      // available camera frame. Avoid the old 1.1s exposure-settling pause.
+      var fx = $('#flashFx');
+      fx.classList.remove('fire');
+      fx.classList.add('hold');
       var done = false;
       function shoot(){
-        if(done) return; done = true;
-        doCapture(false);            // frame is read first; the white fades out right after
+        if(done) return;
+        done = true;
+        doCapture(false);
         shooting = false;
       }
-      setTimeout(function(){
+      // Let the browser paint the white overlay first, then use the next camera frame.
+      requestAnimationFrame(function(){
         if(video.requestVideoFrameCallback){
-          video.requestVideoFrameCallback(shoot);   // next fresh frame, captured under full white
-          setTimeout(shoot, 600);                   // safety net if no frame callback arrives
-        } else shoot();
-      }, 1100);
+          video.requestVideoFrameCallback(shoot);
+          setTimeout(shoot, 250); // fallback if the browser never reports a video frame
+        } else {
+          setTimeout(shoot, 60);
+        }
+      });
     }
 
     if(side === 'back' && caps.torch){
